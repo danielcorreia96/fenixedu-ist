@@ -4,23 +4,22 @@ import static org.fenixedu.bennu.RegistrationProcessConfiguration.RESOURCE_BUNDL
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 
-import org.fenixedu.academic.domain.util.email.Message;
 import org.fenixedu.academic.domain.util.email.SystemSender;
 import org.fenixedu.bennu.RegistrationProcessConfiguration;
 import org.fenixedu.bennu.core.domain.Bennu;
+import org.fenixedu.bennu.core.groups.Group;
 import org.fenixedu.bennu.core.i18n.BundleUtil;
 import org.fenixedu.bennu.core.rest.JsonBodyReaderWriter;
 import org.fenixedu.bennu.core.util.CoreConfiguration;
+import org.fenixedu.messaging.core.domain.Message;
+import org.fenixedu.messaging.core.domain.MessagingSystem;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -144,8 +143,12 @@ public class SignCertAndStoreService {
         String title = BundleUtil.getString(RESOURCE_BUNDLE, locale,"registration.document.email.title", displayName);
         String body = BundleUtil.getString(RESOURCE_BUNDLE, locale, "registration.document.email.body", displayName, link);
 
-        SystemSender systemSender = Bennu.getInstance().getSystemSender();
-        new Message(systemSender, systemSender.getConcreteReplyTos(), Collections.EMPTY_LIST, title, body, email);
+        Message.fromSystem()
+                .replyToSender()
+                .singleBccs(email)
+                .subject(title)
+                .textBody(body)
+                .send();
     }
 
     private Optional<String> uploadDirectoryFor(DriveClient driveClient, String username) {

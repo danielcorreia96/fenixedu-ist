@@ -34,9 +34,7 @@ import org.fenixedu.academic.domain.organizationalStructure.DepartmentUnit;
 import org.fenixedu.academic.domain.organizationalStructure.Party;
 import org.fenixedu.academic.domain.organizationalStructure.ScientificAreaUnit;
 import org.fenixedu.academic.domain.organizationalStructure.Unit;
-import org.fenixedu.academic.domain.util.email.PersonSender;
 import org.fenixedu.academic.domain.util.email.Recipient;
-import org.fenixedu.academic.domain.util.email.Sender;
 import org.fenixedu.academic.predicate.AccessControl;
 import org.fenixedu.academic.ui.struts.action.departmentMember.DepartmentMemberApp.DepartmentMemberMessagingApp;
 import org.fenixedu.academic.ui.struts.action.messaging.EmailsDA;
@@ -116,20 +114,20 @@ public class SendEmailToDepartmentGroups extends UnitMailSenderAction {
             HttpServletResponse response) {
         final Unit unit = getUnit(request);
 
-        final Sender unitSender = getSomeSender(unit);
+        final org.fenixedu.messaging.core.domain.Sender unitSender = unit.getSender();
 
         if (userOfficialSender(unit, unitSender)) {
             return EmailsDA.sendEmail(request, unitSender);
         } else {
             final Person person = AccessControl.getPerson();
-            final PersonSender sender = person.getSender();
+            final org.fenixedu.messaging.core.domain.Sender sender = person.getSender();
 
             return unitSender == null ? EmailsDA.sendEmail(request, sender) : EmailsDA.sendEmail(request, sender, unitSender
-                    .getRecipientsSet().toArray(new Recipient[0]));
+                    .getRecipients().toArray(new Recipient[0]));
         }
     }
 
-    private boolean userOfficialSender(final Unit unit, final Sender unitSender) {
+    private boolean userOfficialSender(final Unit unit, final org.fenixedu.messaging.core.domain.Sender unitSender) {
         if (unit instanceof DepartmentUnit) {
             final DepartmentUnit departmentUnit = (DepartmentUnit) unit;
             final Department department = departmentUnit.getDepartment();
@@ -138,11 +136,5 @@ public class SendEmailToDepartmentGroups extends UnitMailSenderAction {
         return false;
     }
 
-    private Sender getSomeSender(final Unit unit) {
-        for (final Sender sender : unit.getUnitBasedSenderSet()) {
-            return sender;
-        }
-        return null;
-    }
 
 }

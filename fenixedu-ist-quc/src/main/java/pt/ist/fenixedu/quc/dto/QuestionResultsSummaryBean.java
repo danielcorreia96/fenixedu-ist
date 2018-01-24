@@ -157,8 +157,8 @@ public class QuestionResultsSummaryBean implements Serializable {
         switch (inquiryResultComment.getPersonCategory()) {
         case DELEGATE:
             YearDelegate yearDelegate = getYearDelegate(inquiryResultComment);
-            return BundleUtil.getString("resources.InquiriesResources", "label.commentHeader.delegate", new String[] {
-                    yearDelegate.getCurricularYear().getYear().toString(), yearDelegate.getDegree().getSigla() });
+            return BundleUtil.getString("resources.InquiriesResources", "label.commentHeader.delegate",
+                    yearDelegate.getCurricularYear().getYear().toString(), yearDelegate.getDegree().getSigla());
         case TEACHER:
             String teacherHeaderLabel = "label.commentHeader.teacher";
             if (inquiryResultComment.getInquiryResult().getProfessorship().getResponsibleFor()) {
@@ -167,7 +167,7 @@ public class QuestionResultsSummaryBean implements Serializable {
             return BundleUtil.getString("resources.InquiriesResources", teacherHeaderLabel);
         case REGENT:
             return BundleUtil.getString("resources.InquiriesResources", "label.commentHeader.responsible",
-                    new String[] { inquiryResultComment.getPerson().getName() });
+                    inquiryResultComment.getPerson().getName());
         default:
             break;
         }

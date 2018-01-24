@@ -29,7 +29,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.fenixedu.academic.domain.Person;
 import org.fenixedu.academic.domain.Teacher;
-import org.fenixedu.academic.domain.util.email.PersonSender;
 import org.fenixedu.academic.domain.util.email.Recipient;
 import org.fenixedu.academic.domain.util.email.Sender;
 import org.fenixedu.academic.ui.struts.action.base.FenixDispatchAction;
@@ -120,7 +119,6 @@ public class SendEmailToTutoredStudents extends FenixDispatchAction {
     public ActionForward createMail(ActionMapping mapping, ActionForm actionForm, HttpServletRequest request,
             HttpServletResponse response) throws Exception {
         final Person teacherPerson = getLoggedPerson(request);
-        Sender sender = PersonSender.newInstance(teacherPerson);
-        return EmailsDA.sendEmail(request, sender, getRecipients(request).toArray(new Recipient[] {}));
+        return EmailsDA.sendEmail(request, teacherPerson.getSender(), getRecipients(request).toArray(new Recipient[] {}));
     }
 }

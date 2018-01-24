@@ -60,7 +60,7 @@ public class ExportExistingStudentsFromImportationProcess extends ExportExisting
 
         final Spreadsheet spreadsheet = new Spreadsheet("Shifts");
         spreadsheet
-                .setHeaders(new String[] { "Número de Aluno", "Nome", "BI", "Curso", "Ano", "Campus", "Ficheiro de importacao" });
+                .setHeaders("Número de Aluno", "Nome", "BI", "Curso", "Ano", "Campus", "Ficheiro de importacao");
 
         for (DgesStudentImportationProcess importationProcess : DgesStudentImportationProcess.readDoneJobs(getExecutionYear())) {
             if (!importationProcess.getEntryPhase().equals(getEntryPhase())) {
