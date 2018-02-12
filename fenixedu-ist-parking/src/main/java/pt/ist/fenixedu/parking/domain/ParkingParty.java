@@ -335,8 +335,7 @@ public class ParkingParty extends ParkingParty_Base {
                 if (currentResearcherContractSituation != null) {
                     StringBuilder stringBuilder =
                             new StringBuilder(BundleUtil.getString("resources.ParkingResources", "message.person.identification",
-                                    new String[] { RoleType.RESEARCHER.getLocalizedName(),
-                                            PartyClassification.getMostSignificantNumber(person).toString() }));
+                                    RoleType.RESEARCHER.getLocalizedName(), PartyClassification.getMostSignificantNumber(person).toString()));
                     Unit currentUnit = person.getEmployee() != null ? person.getEmployee().getCurrentWorkingPlace() : null;
                     if (currentUnit != null) {
                         stringBuilder.append(currentUnit.getName()).append("<br/>");
@@ -360,8 +359,8 @@ public class ParkingParty extends ParkingParty_Base {
                         if (stringBuilder == null) {
                             stringBuilder =
                                     new StringBuilder(BundleUtil.getString("resources.ParkingResources",
-                                            "message.person.identification", new String[] { RoleType.STUDENT.getLocalizedName(),
-                                                    student.getNumber().toString() }));
+                                            "message.person.identification",
+                                            RoleType.STUDENT.getLocalizedName(), student.getNumber().toString()));
 
                         }
                         stringBuilder.append("\n").append(scp.getDegreeCurricularPlan().getName());
@@ -408,7 +407,7 @@ public class ParkingParty extends ParkingParty_Base {
     private String getOccupation(String type, String identification, String workingPlace) {
         StringBuilder stringBuilder =
                 new StringBuilder(BundleUtil.getString("resources.ParkingResources", "message.person.identification",
-                        new String[] { type, identification }));
+                        type, identification));
         if (!Strings.isNullOrEmpty(workingPlace)) {
             stringBuilder.append(workingPlace).append("<br/>");
         }

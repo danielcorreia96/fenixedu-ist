@@ -51,9 +51,6 @@ import org.fenixedu.academic.domain.contacts.EmailAddress;
 import org.fenixedu.academic.domain.organizationalStructure.Party;
 import org.fenixedu.academic.domain.person.RoleType;
 import org.fenixedu.academic.domain.student.Registration;
-import org.fenixedu.academic.domain.util.email.ConcreteReplyTo;
-import org.fenixedu.academic.domain.util.email.Message;
-import org.fenixedu.academic.domain.util.email.Sender;
 import org.fenixedu.academic.service.services.commons.ExecuteFactoryMethod;
 import org.fenixedu.academic.service.services.exceptions.FenixServiceException;
 import org.fenixedu.academic.ui.struts.action.base.FenixDispatchAction;
@@ -62,6 +59,7 @@ import org.fenixedu.academic.util.ContentType;
 import org.fenixedu.academic.util.report.ReportPrinter.ReportResult;
 import org.fenixedu.academic.util.report.ReportsUtils;
 import org.fenixedu.bennu.core.domain.Bennu;
+import org.fenixedu.bennu.core.groups.Group;
 import org.fenixedu.bennu.struts.annotations.Forward;
 import org.fenixedu.bennu.struts.annotations.Forwards;
 import org.fenixedu.bennu.struts.annotations.Mapping;
@@ -70,6 +68,8 @@ import org.fenixedu.bennu.struts.portal.StrutsFunctionality;
 import org.fenixedu.commons.StringNormalizer;
 import org.fenixedu.commons.i18n.I18N;
 import org.fenixedu.commons.spreadsheet.StyledExcelSpreadsheet;
+import org.fenixedu.messaging.core.domain.Message;
+import org.fenixedu.messaging.core.domain.MessagingSystem;
 import org.joda.time.DateTime;
 
 import pt.ist.fenixWebFramework.renderers.components.state.IViewState;
@@ -756,9 +756,12 @@ public class ParkingManagerDispatchAction extends FenixDispatchAction {
 
         if (note != null && note.trim().length() != 0 && email != null) {
             ResourceBundle bundle = ResourceBundle.getBundle("resources.ParkingResources", I18N.getLocale());
-            Sender sender = Bennu.getInstance().getSystemSender();
-            ConcreteReplyTo replyTo = new ConcreteReplyTo(bundle.getString("label.fromAddress"));
-            new Message(sender, replyTo.asCollection(), Collections.EMPTY_LIST, bundle.getString("label.subject"), note, email);
+            Message.fromSystem()
+                    .replyTo(bundle.getString("label.fromAddress"))
+                    .singleBccs(email)
+                    .subject(bundle.getString("label.subject"))
+                    .textBody(note)
+                    .send();
         }
     }
 

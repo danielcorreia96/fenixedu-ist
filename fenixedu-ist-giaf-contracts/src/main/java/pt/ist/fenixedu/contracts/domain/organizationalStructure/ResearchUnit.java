@@ -26,10 +26,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.fenixedu.academic.domain.Degree;
-import org.fenixedu.academic.domain.Department;
-import org.fenixedu.academic.domain.Person;
-import org.fenixedu.academic.domain.Teacher;
+import org.fenixedu.academic.domain.*;
 import org.fenixedu.academic.domain.accessControl.UnitGroup;
 import org.fenixedu.academic.domain.administrativeOffice.AdministrativeOffice;
 import org.fenixedu.academic.domain.exceptions.DomainException;
@@ -41,7 +38,6 @@ import org.fenixedu.academic.domain.organizationalStructure.PartyType;
 import org.fenixedu.academic.domain.organizationalStructure.PartyTypeEnum;
 import org.fenixedu.academic.domain.organizationalStructure.Unit;
 import org.fenixedu.academic.domain.organizationalStructure.UnitClassification;
-import org.fenixedu.academic.domain.util.email.UnitBasedSender;
 import org.fenixedu.academic.predicate.AccessControl;
 import org.fenixedu.commons.i18n.LocalizedString;
 import org.fenixedu.bennu.core.groups.Group;
@@ -49,10 +45,9 @@ import org.fenixedu.spaces.domain.Space;
 import org.joda.time.YearMonthDay;
 
 import pt.ist.fenixedu.contracts.domain.Employee;
-import pt.ist.fenixedu.contracts.domain.util.email.ResearchUnitBasedSender;
-import pt.ist.fenixframework.Atomic;
 
 import com.google.common.base.Strings;
+import pt.ist.fenixframework.Atomic;
 
 public class ResearchUnit extends ResearchUnit_Base {
 
@@ -207,15 +202,6 @@ public class ResearchUnit extends ResearchUnit_Base {
         getPublicationCollaboratorsSet().addAll(collaborators);
     }
 
-    @Override
-    @Atomic
-    public UnitBasedSender getOneUnitBasedSender() {
-        if (!getUnitBasedSenderSet().isEmpty()) {
-            return getUnitBasedSenderSet().iterator().next();
-        } else {
-            return ResearchUnitBasedSender.newInstance(this);
-        }
-    }
 
     public static List<ResearchUnit> getWorkingResearchUnits(Person person) {
         final List<ResearchUnit> units = new ArrayList<ResearchUnit>();
@@ -268,6 +254,24 @@ public class ResearchUnit extends ResearchUnit_Base {
             }
         }
         return new ArrayList<Employee>(employees);
+    }
+
+
+    @Override
+    public org.fenixedu.messaging.core.domain.Sender getSender() {
+        org.fenixedu.messaging.core.domain.Sender sender = super.getSender();
+        return sender == null ? buildDefaultSender() : sender;
+    }
+
+    @Atomic
+    protected org.fenixedu.messaging.core.domain.Sender buildDefaultSender() {
+        org.fenixedu.messaging.core.domain.Sender sender = org.fenixedu.messaging.core.domain.Sender
+                .from(Installation.getInstance().getInstituitionalEmailAddress("noreply"))
+                .as(String.format("%s (%s)", Unit.getInstitutionAcronym(), getName()))
+                .members(UnitGroup.get(this, AccountabilityTypeEnum.RESEARCH_CONTRACT, false))
+                .build();
+        setSender(sender);
+        return sender;
     }
 
 }

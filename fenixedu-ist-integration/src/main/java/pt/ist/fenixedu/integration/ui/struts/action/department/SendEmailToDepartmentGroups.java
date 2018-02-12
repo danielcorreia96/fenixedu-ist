@@ -18,12 +18,6 @@
  */
 package pt.ist.fenixedu.integration.ui.struts.action.department;
 
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -34,9 +28,6 @@ import org.fenixedu.academic.domain.organizationalStructure.DepartmentUnit;
 import org.fenixedu.academic.domain.organizationalStructure.Party;
 import org.fenixedu.academic.domain.organizationalStructure.ScientificAreaUnit;
 import org.fenixedu.academic.domain.organizationalStructure.Unit;
-import org.fenixedu.academic.domain.util.email.PersonSender;
-import org.fenixedu.academic.domain.util.email.Recipient;
-import org.fenixedu.academic.domain.util.email.Sender;
 import org.fenixedu.academic.predicate.AccessControl;
 import org.fenixedu.academic.ui.struts.action.departmentMember.DepartmentMemberApp.DepartmentMemberMessagingApp;
 import org.fenixedu.academic.ui.struts.action.messaging.EmailsDA;
@@ -46,11 +37,15 @@ import org.fenixedu.bennu.struts.annotations.Forwards;
 import org.fenixedu.bennu.struts.annotations.Mapping;
 import org.fenixedu.bennu.struts.portal.EntryPoint;
 import org.fenixedu.bennu.struts.portal.StrutsFunctionality;
-
 import pt.ist.fenixedu.contracts.domain.Employee;
 import pt.ist.fenixedu.contracts.domain.accessControl.DepartmentPresidentStrategy;
 import pt.ist.fenixedu.contracts.domain.organizationalStructure.Contract;
 import pt.ist.fenixedu.contracts.domain.organizationalStructure.EmployeeContract;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Set;
+import java.util.TreeSet;
 
 @StrutsFunctionality(app = DepartmentMemberMessagingApp.class, path = "send-email-to-department-groups",
         titleKey = "label.sendEmailToGroups")
@@ -116,20 +111,20 @@ public class SendEmailToDepartmentGroups extends UnitMailSenderAction {
             HttpServletResponse response) {
         final Unit unit = getUnit(request);
 
-        final Sender unitSender = getSomeSender(unit);
+        final org.fenixedu.messaging.core.domain.Sender unitSender = unit.getSender();
 
         if (userOfficialSender(unit, unitSender)) {
-            return EmailsDA.sendEmail(request, unitSender);
+            return EmailsDA.sendEmail(request, unitSender, null);
         } else {
             final Person person = AccessControl.getPerson();
-            final PersonSender sender = person.getSender();
+            final org.fenixedu.messaging.core.domain.Sender sender = person.getSender();
 
-            return unitSender == null ? EmailsDA.sendEmail(request, sender) : EmailsDA.sendEmail(request, sender, unitSender
-                    .getRecipientsSet().toArray(new Recipient[0]));
+            return unitSender == null ? EmailsDA.sendEmail(request, sender, null) :
+                    EmailsDA.sendEmail(request, sender, unitSender.getRecipients());
         }
     }
 
-    private boolean userOfficialSender(final Unit unit, final Sender unitSender) {
+    private boolean userOfficialSender(final Unit unit, final org.fenixedu.messaging.core.domain.Sender unitSender) {
         if (unit instanceof DepartmentUnit) {
             final DepartmentUnit departmentUnit = (DepartmentUnit) unit;
             final Department department = departmentUnit.getDepartment();
@@ -138,11 +133,5 @@ public class SendEmailToDepartmentGroups extends UnitMailSenderAction {
         return false;
     }
 
-    private Sender getSomeSender(final Unit unit) {
-        for (final Sender sender : unit.getUnitBasedSenderSet()) {
-            return sender;
-        }
-        return null;
-    }
 
 }

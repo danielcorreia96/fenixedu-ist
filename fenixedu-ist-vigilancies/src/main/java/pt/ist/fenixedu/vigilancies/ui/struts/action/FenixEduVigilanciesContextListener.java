@@ -18,9 +18,7 @@
  */
 package pt.ist.fenixedu.vigilancies.ui.struts.action;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -30,16 +28,14 @@ import org.fenixedu.academic.domain.ExecutionCourse;
 import org.fenixedu.academic.domain.Person;
 import org.fenixedu.academic.domain.WrittenEvaluation;
 import org.fenixedu.academic.domain.organizationalStructure.Unit;
-import org.fenixedu.academic.domain.util.email.ConcreteReplyTo;
-import org.fenixedu.academic.domain.util.email.Message;
-import org.fenixedu.academic.domain.util.email.Recipient;
-import org.fenixedu.academic.domain.util.email.Sender;
 import org.fenixedu.academic.service.services.manager.MergeExecutionCourses;
 import org.fenixedu.academic.service.services.resourceAllocationManager.exams.EditWrittenEvaluation.EditWrittenEvaluationEvent;
 import org.fenixedu.academic.util.Bundle;
-import org.fenixedu.bennu.core.domain.Bennu;
+import org.fenixedu.bennu.core.groups.Group;
 import org.fenixedu.bennu.core.i18n.BundleUtil;
 import org.fenixedu.bennu.core.signals.Signal;
+import org.fenixedu.messaging.core.domain.Message;
+import org.fenixedu.messaging.core.domain.MessagingSystem;
 import org.joda.time.DateTime;
 
 import pt.ist.fenixedu.vigilancies.domain.Vigilancy;
@@ -87,19 +83,21 @@ public class FenixEduVigilanciesContextListener implements ServletContextListene
                 String beginDateString = date.getDayOfMonth() + "-" + date.getMonthOfYear() + "-" + date.getYear();
 
                 String subject =
-                        BundleUtil.getString("resources.VigilancyResources", "email.convoke.subject", new String[] {
-                                writtenEvaluation.getName(), group.getName(), beginDateString, time });
+                        BundleUtil.getString("resources.VigilancyResources", "email.convoke.subject",
+                                writtenEvaluation.getName(), group.getName(), beginDateString, time);
                 String body =
                         BundleUtil.getString("resources.VigilancyResources", "label.writtenEvaluationDeletedMessage",
-                                new String[] { writtenEvaluation.getName(), beginDateString, time });
+                                writtenEvaluation.getName(), beginDateString, time);
                 for (Vigilancy vigilancy : writtenEvaluation.getVigilanciesSet()) {
                     Person person = vigilancy.getVigilantWrapper().getPerson();
                     tos.add(person);
                 }
-                Sender sender = Bennu.getInstance().getSystemSender();
-                new Message(sender, new ConcreteReplyTo(group.getContactEmail()).asCollection(), new Recipient(
-                        Person.convertToUserGroup(tos)).asCollection(), subject, body, "");
-
+                Message.fromSystem()
+                        .replyTo(group.getContactEmail())
+                        .to(Person.convertToUserGroup(tos))
+                        .subject(subject)
+                        .textBody(body)
+                        .send();
             }
         }
     }
@@ -133,9 +131,12 @@ public class FenixEduVigilanciesContextListener implements ServletContextListene
                     Person person = vigilancy.getVigilantWrapper().getPerson();
                     tos.add(person);
                 }
-                Sender sender = Bennu.getInstance().getSystemSender();
-                new Message(sender, new ConcreteReplyTo(group.getContactEmail()).asCollection(), new Recipient(
-                        Person.convertToUserGroup(tos)).asCollection(), subject, body, "");
+                Message.fromSystem()
+                        .replyTo(group.getContactEmail())
+                        .to(Person.convertToUserGroup(tos))
+                        .subject(subject)
+                        .textBody(body)
+                        .send();
             }
         }
     }

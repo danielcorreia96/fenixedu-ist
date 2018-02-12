@@ -18,22 +18,20 @@
  */
 package pt.ist.fenixedu.delegates.domain.student;
 
-import static org.fenixedu.bennu.FenixEduDelegatesConfiguration.BUNDLE;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.fenixedu.academic.domain.CurricularCourse;
 import org.fenixedu.academic.domain.CurricularYear;
 import org.fenixedu.academic.domain.Degree;
 import org.fenixedu.academic.domain.ExecutionYear;
-import org.fenixedu.academic.domain.util.email.Recipient;
 import org.fenixedu.bennu.core.domain.User;
 import org.fenixedu.bennu.core.i18n.BundleUtil;
-
 import pt.ist.fenixedu.delegates.domain.accessControl.DelegateGroup;
 import pt.ist.fenixedu.delegates.domain.util.email.DelegateSender;
 import pt.ist.fenixedu.delegates.ui.DelegateBean;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.fenixedu.bennu.FenixEduDelegatesConfiguration.BUNDLE;
 
 public class YearDelegate extends YearDelegate_Base {
 
@@ -53,7 +51,7 @@ public class YearDelegate extends YearDelegate_Base {
     public void setSender(DelegateSender sender) {
         super.setSender(sender);
         getSender().setMembers(getUser().groupOf());
-        getSender().addRecipients(Recipient.getRecipientFromGroup(DelegateGroup.get(getDegree())));
+        getSender().addRecipient(DelegateGroup.get(getDegree()));
     }
 
     @Override
