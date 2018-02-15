@@ -24,9 +24,8 @@ import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.fenixedu.academic.FenixEduAcademicConfiguration;
-import org.fenixedu.academic.domain.util.email.Sender;
 import org.fenixedu.academic.util.ConnectionManager;
-import org.fenixedu.bennu.core.domain.Bennu;
+import org.fenixedu.messaging.core.domain.MessagingSystem;
 
 public class TaskUtils {
 
@@ -42,10 +41,10 @@ public class TaskUtils {
         properties.put("mail.debug", "false");
         final Session session = Session.getDefaultInstance(properties, null);
 
-        final Sender sender = Bennu.getInstance().getSystemSender();
+        final org.fenixedu.messaging.core.domain.Sender sender = MessagingSystem.systemSender();
 
         final Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(sender.getFromAddress()));
+        message.setFrom(new InternetAddress(sender.getAddress()));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(fileContent(EMAIL_ADDRESSES_TO_SEND_DATA_FILENAME)));
         message.setRecipients(Message.RecipientType.BCC, InternetAddress.parse(fileContent(EMAIL_ADDRESSES_BCC_SEND_DATA_FILENAME)));
         message.setSubject(subject);
