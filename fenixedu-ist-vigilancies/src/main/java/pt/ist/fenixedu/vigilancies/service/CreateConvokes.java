@@ -18,18 +18,13 @@
  */
 package pt.ist.fenixedu.vigilancies.service;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.fenixedu.academic.domain.Person;
 import org.fenixedu.academic.domain.WrittenEvaluation;
-import org.fenixedu.academic.domain.util.email.ConcreteReplyTo;
-import org.fenixedu.academic.domain.util.email.Message;
-import org.fenixedu.academic.domain.util.email.PersonSender;
-import org.fenixedu.academic.domain.util.email.Recipient;
+import org.fenixedu.bennu.core.groups.Group;
 import org.fenixedu.bennu.core.i18n.BundleUtil;
+import org.fenixedu.messaging.core.domain.Message;
 import org.joda.time.DateTime;
 
 import pt.ist.fenixedu.vigilancies.domain.ExamCoordinator;
@@ -45,7 +40,6 @@ public class CreateConvokes {
         group.convokeVigilants(vigilants, writtenEvaluation);
 
         Set<Person> recievers = new HashSet<Person>();
-        Set<String> bccs = new HashSet<String>();
 
         if (emailMessage.length() != 0) {
             Person person = coordinator.getPerson();
@@ -54,14 +48,15 @@ public class CreateConvokes {
             }
 
             String groupEmail = group.getContactEmail();
-            String replyTo;
+            String replyTo, bccs;
 
             recievers.addAll(writtenEvaluation.getTeachers());
 
             if (groupEmail != null) {
-                bccs.add(groupEmail);
+                bccs = groupEmail;
                 replyTo = groupEmail;
             } else {
+                bccs = null;
                 replyTo = person.getEmail();
             }
 
@@ -70,12 +65,15 @@ public class CreateConvokes {
 
             String subject =
                     BundleUtil.getString("resources.VigilancyResources", "email.convoke.subject",
-                            new String[] { group.getEmailSubjectPrefix(), writtenEvaluation.getName(), group.getName(),
-                                    beginDateString });
+                            group.getEmailSubjectPrefix(), writtenEvaluation.getName(), group.getName(), beginDateString);
 
-            new Message(PersonSender.newInstance(person), new ConcreteReplyTo(replyTo).asCollection(), new Recipient(
-                    Person.convertToUserGroup(recievers)).asCollection(), Collections.EMPTY_LIST, Collections.EMPTY_LIST,
-                    subject, emailMessage, bccs);
+            Message.from(person.getSender())
+                    .replyTo(replyTo)
+                    .to(Person.convertToUserGroup(recievers))
+                    .singleBcc(bccs)
+                    .subject(subject)
+                    .textBody(emailMessage)
+                    .send();
         }
     }
 }

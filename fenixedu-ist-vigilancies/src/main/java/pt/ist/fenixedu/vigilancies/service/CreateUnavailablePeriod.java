@@ -18,16 +18,14 @@
  */
 package pt.ist.fenixedu.vigilancies.service;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.fenixedu.academic.domain.ExecutionYear;
 import org.fenixedu.academic.domain.Person;
-import org.fenixedu.academic.domain.util.email.ConcreteReplyTo;
-import org.fenixedu.academic.domain.util.email.Message;
-import org.fenixedu.academic.domain.util.email.Sender;
-import org.fenixedu.bennu.core.domain.Bennu;
+import org.fenixedu.bennu.core.groups.Group;
 import org.fenixedu.bennu.core.i18n.BundleUtil;
+import org.fenixedu.messaging.core.domain.Message;
+import org.fenixedu.messaging.core.domain.MessagingSystem;
 import org.joda.time.DateTime;
 
 import pt.ist.fenixedu.vigilancies.domain.UnavailablePeriod;
@@ -50,8 +48,6 @@ public class CreateUnavailablePeriod {
 
     private static void sendEmail(Person person, DateTime begin, DateTime end, String justification, List<VigilantGroup> groups) {
         for (VigilantGroup group : groups) {
-            String bccs = group.getContactEmail();
-
             String beginDate =
                     begin.getDayOfMonth() + "/" + begin.getMonthOfYear() + "/" + begin.getYear() + " - "
                             + String.format("%02d", begin.getHourOfDay()) + ":" + String.format("%02d", begin.getMinuteOfHour())
@@ -62,15 +58,18 @@ public class CreateUnavailablePeriod {
                             + "h";;
             String message =
                     BundleUtil.getString("resources.VigilancyResources", "email.convoke.unavailablePeriod",
-                            new String[] { person.getName(), beginDate, endDate, justification });
+                            person.getName(), beginDate, endDate, justification);
 
             String subject =
                     BundleUtil.getString("resources.VigilancyResources", "email.convoke.unavailablePeriod.subject",
-                            new String[] { group.getName() });
+                            group.getName());
 
-            Sender sender = Bennu.getInstance().getSystemSender();
-            new Message(sender, new ConcreteReplyTo(group.getContactEmail()).asCollection(), Collections.EMPTY_LIST, subject,
-                    message, bccs);
+            Message.fromSystem()
+                    .replyTo(group.getContactEmail())
+                    .singleBcc(group.getContactEmail())
+                    .subject(subject)
+                    .textBody(message)
+                    .send();
         }
     }
 }
