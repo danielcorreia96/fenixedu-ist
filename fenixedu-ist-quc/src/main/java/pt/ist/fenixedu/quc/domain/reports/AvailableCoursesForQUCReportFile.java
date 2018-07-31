@@ -92,12 +92,12 @@ public class AvailableCoursesForQUCReportFile extends AvailableCoursesForQUCRepo
             row.setCell(curricularCourse.getName());
             row.setCell(executionCourse.getExecutionPeriod().getName());
             row.setCell(GepReportFile.getExecutionCourseCode(executionCourse));
-            row.setCell(InquiriesRoot.isAvailableForInquiry(executionCourse) == true ? "Sim" : "Não");
+            row.setCell(InquiriesRoot.isAvailableForInquiry(executionCourse) ? "Sim" : "Não");
         }
     }
 
     private Set<ExecutionCourse> getExecutionCourses(CurricularCourse curricularCourse, Degree degree) {
-        Set<ExecutionCourse> result = new HashSet<ExecutionCourse>();
+        Set<ExecutionCourse> result = new HashSet<>();
         for (ExecutionCourse executionCourse : curricularCourse.getExecutionCoursesByExecutionYear(getExecutionYear())) {
             for (ExecutionDegree executionDegree : executionCourse.getExecutionDegrees()) {
                 if (executionDegree.getDegree() == degree) {

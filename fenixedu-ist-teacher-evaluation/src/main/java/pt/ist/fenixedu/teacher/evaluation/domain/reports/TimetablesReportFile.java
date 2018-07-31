@@ -145,7 +145,7 @@ public class TimetablesReportFile extends TimetablesReportFile_Base {
                                 }
 
                                 // Percentagem Assegurada pelo Docente
-                                row.setCell(((Math.round((service.getPercentage()).doubleValue() * 100.0)) / 100.0));
+                                row.setCell(((Math.round(service.getPercentage() * 100.0)) / 100.0));
 
                                 // Nº Alunos Inscritos
                                 row.setCell(service.getShift().getShiftEnrolmentsOrderedByDate().size());
@@ -153,7 +153,7 @@ public class TimetablesReportFile extends TimetablesReportFile_Base {
                         }
                     }
                 }
-                if ((executionCourse != null) && (areLessonsWithoutTeacherConsidered.get(executionCourse) == false)) {
+                if ((executionCourse != null) && (!areLessonsWithoutTeacherConsidered.get(executionCourse))) {
                     for (Lesson lesson : getRootDomainObject().getLessonsSet()) {
                         if (lesson.getExecutionCourse() != executionCourse) {
                             continue;
@@ -212,7 +212,7 @@ public class TimetablesReportFile extends TimetablesReportFile_Base {
                                 areLessonsWithoutTeacherConsidered.put(executionCourse, true);
                             }
                         }
-                        if (areLessonsWithoutTeacherConsidered.get(executionCourse) == true) {
+                        if (areLessonsWithoutTeacherConsidered.get(executionCourse)) {
                             break;
                         }
                     }

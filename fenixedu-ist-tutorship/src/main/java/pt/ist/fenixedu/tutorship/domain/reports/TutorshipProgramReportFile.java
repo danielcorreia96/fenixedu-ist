@@ -116,7 +116,7 @@ public class TutorshipProgramReportFile extends TutorshipProgramReportFile_Base 
                             }
 
                             final String dislocatedString =
-                                    dislocated == null ? "" : (dislocated.booleanValue() ? "Deslocado" : "Não Deslocado");
+                                    dislocated == null ? "" : (dislocated ? "Deslocado" : "Não Deslocado");
                             row.setCell(dislocatedString);
                         }
                     }

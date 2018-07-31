@@ -3,7 +3,6 @@ package pt.ist.fenixedu.quc.domain;
 import java.io.InputStreamReader;
 
 import org.fenixedu.academic.domain.QueueJobResult;
-import org.fenixedu.bennu.core.domain.Bennu;
 import org.fenixedu.bennu.core.signals.DomainObjectEvent;
 import org.fenixedu.bennu.core.signals.Signal;
 import org.joda.time.DateTime;
@@ -11,7 +10,6 @@ import org.joda.time.DateTime;
 import com.google.common.io.CharStreams;
 
 import pt.ist.fenixedu.quc.domain.exceptions.FenixEduQucDomainException;
-import pt.ist.fenixframework.FenixFramework;
 
 public class ResultsImportationProcess extends ResultsImportationProcess_Base {
     

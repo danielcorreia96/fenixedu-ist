@@ -62,7 +62,7 @@ public class FirstTimeCycleAnswersReportFile extends FirstTimeCycleAnswersReport
                     String executionCoursesCodes =
                             registration.getFirstStudentCurricularPlan().getDegreeCurricularPlan().getExecutionDegreesSet()
                                     .stream().filter(ed -> ed.getExecutionYear() == getExecutionYear())
-                                    .map(ed -> GepReportFile.getExecutionDegreeCode(ed)).collect(Collectors.joining(", "));
+                                    .map(GepReportFile::getExecutionDegreeCode).collect(Collectors.joining(", "));
                     row.setCell(executionCoursesCodes);
                     row.setCell(studentCycleAnswer.getRegistration().getPerson().getUsername());
                     row.setCell(registration.getCycleType(getExecutionYear()) != null ? registration.getCycleType(
@@ -87,7 +87,7 @@ public class FirstTimeCycleAnswersReportFile extends FirstTimeCycleAnswersReport
                                 phdProgram.getRegistration().getFirstStudentCurricularPlan().getDegreeCurricularPlan()
                                         .getExecutionDegreesSet().stream()
                                         .filter(ed -> ed.getExecutionYear() == getExecutionYear())
-                                        .map(ed -> GepReportFile.getExecutionDegreeCode(ed)).collect(Collectors.joining(", "));
+                                        .map(GepReportFile::getExecutionDegreeCode).collect(Collectors.joining(", "));
                         row.setCell(executionCoursesCodes);
                     } else {
                         row.setCell("sem matrícula");

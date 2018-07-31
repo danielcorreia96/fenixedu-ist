@@ -130,9 +130,9 @@ public class StudentMeritReportFile extends StudentMeritReportFile_Base {
                 final CurriculumLine curriculumLine = (CurriculumLine) module;
                 if (curriculumLine.getExecutionYear() == executionYear) {
                     if (approvedCredits) {
-                        creditsCount += curriculumLine.getAprovedEctsCredits().doubleValue();
+                        creditsCount += curriculumLine.getAprovedEctsCredits();
                     } else {
-                        creditsCount += curriculumLine.getEctsCredits().doubleValue();
+                        creditsCount += curriculumLine.getEctsCredits();
                     }
                 }
             }
@@ -141,7 +141,7 @@ public class StudentMeritReportFile extends StudentMeritReportFile_Base {
     }
 
     private BigDecimal calculateAverage(final Registration registration, final ExecutionYear executionYear) {
-        BigDecimal[] result = new BigDecimal[] { new BigDecimal(0.000, MATH_CONTEXT), new BigDecimal(0.000, MATH_CONTEXT) };
+        BigDecimal[] result = { new BigDecimal(0.000, MATH_CONTEXT), new BigDecimal(0.000, MATH_CONTEXT) };
         for (final StudentCurricularPlan studentCurricularPlan : registration.getStudentCurricularPlansSet()) {
             final RootCurriculumGroup root = studentCurricularPlan.getRoot();
             final Set<CurriculumModule> modules =

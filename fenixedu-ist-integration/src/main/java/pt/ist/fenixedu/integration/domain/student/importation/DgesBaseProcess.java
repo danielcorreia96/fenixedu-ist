@@ -18,7 +18,7 @@
  */
 package pt.ist.fenixedu.integration.domain.student.importation;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,7 +57,7 @@ public abstract class DgesBaseProcess extends DgesBaseProcess_Base {
 
     protected List<DegreeCandidateDTO> parseDgesFile(byte[] contents, String university, EntryPhase entryPhase) {
 
-        final List<DegreeCandidateDTO> result = new ArrayList<DegreeCandidateDTO>();
+        final List<DegreeCandidateDTO> result = new ArrayList<>();
         String[] lines = readContent(contents);
         for (String dataLine : lines) {
             DegreeCandidateDTO dto = new DegreeCandidateDTO();
@@ -78,11 +78,7 @@ public abstract class DgesBaseProcess extends DgesBaseProcess_Base {
     }
 
     public static String[] readContent(byte[] contents) {
-        try {
-            String fileContents = new String(contents, "UTF-8");
-            return fileContents.split("\n");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        String fileContents = new String(contents, StandardCharsets.UTF_8);
+        return fileContents.split("\n");
     }
 }

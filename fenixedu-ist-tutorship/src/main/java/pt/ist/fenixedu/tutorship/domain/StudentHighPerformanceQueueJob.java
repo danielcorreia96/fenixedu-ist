@@ -45,7 +45,7 @@ public class StudentHighPerformanceQueueJob extends StudentHighPerformanceQueueJ
         Collection<Registration> highPerformants =
                 Bennu.getInstance().getRegistrationsSet().stream().filter(r -> r.hasActiveLastState(semester)).filter(r -> {
                     Collection<Enrolment> enrols = r.getEnrolments(semester);
-                    return enrols.isEmpty() ? false : enrols.stream().allMatch(e -> e.isApproved());
+                    return !enrols.isEmpty() && enrols.stream().allMatch(Enrolment::isApproved);
                 }).collect(Collectors.toSet());
 
         SheetData<Registration> data = new SheetData<Registration>(highPerformants) {
@@ -53,11 +53,9 @@ public class StudentHighPerformanceQueueJob extends StudentHighPerformanceQueueJ
             protected void makeLine(Registration item) {
                 addCell("istId", item.getPerson().getUsername());
                 addCell("Nome", item.getPerson().getName());
-                double totalEcts = 0;
+                double totalEcts;
                 Collection<Enrolment> enrols = item.getEnrolments(semester);
-                for (Enrolment enrolment : enrols) {
-                    totalEcts += enrolment.getEctsCredits();
-                }
+                totalEcts = enrols.stream().mapToDouble(Enrolment::getEctsCredits).sum();
                 addCell("Créditos Inscritos", totalEcts);
                 addCell("Curso", item.getDegree().getNameFor(semester));
                 CycleType cycleType = item.getCycleType(semester.getExecutionYear());

@@ -18,10 +18,7 @@
  */
 package pt.ist.fenixedu.teacher.evaluation.domain.reports;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.fenixedu.academic.domain.Country;
@@ -30,6 +27,7 @@ import org.fenixedu.academic.domain.ExecutionSemester;
 import org.fenixedu.academic.domain.ExecutionYear;
 import org.fenixedu.academic.domain.Teacher;
 import org.fenixedu.academic.domain.TeacherAuthorization;
+import org.fenixedu.academic.domain.TeacherCategory_Base;
 import org.fenixedu.academic.domain.organizationalStructure.Unit;
 import org.fenixedu.bennu.core.domain.Bennu;
 import org.fenixedu.commons.spreadsheet.Spreadsheet;
@@ -44,7 +42,6 @@ import pt.ist.fenixedu.contracts.domain.personnelSection.contracts.ProfessionalR
 import pt.ist.fenixedu.contracts.domain.util.CategoryType;
 import pt.ist.fenixedu.teacher.evaluation.domain.TeacherCredits;
 import pt.ist.fenixedu.teacher.evaluation.domain.credits.util.AnnualTeachingCreditsBean;
-import pt.ist.fenixedu.teacher.evaluation.domain.teacher.OtherService;
 import pt.ist.fenixedu.teacher.evaluation.domain.teacher.TeacherService;
 
 public class TeacherCreditsReportFile extends TeacherCreditsReportFile_Base {
@@ -117,7 +114,8 @@ public class TeacherCreditsReportFile extends TeacherCreditsReportFile_Base {
                     row.setCell(teacher.getPerson().getName());
                     row.setCell(executionSemester.getName());
                     ProfessionalCategory category =
-                            teacher.getCategory(executionSemester.getAcademicInterval()).map(tc -> tc.getProfessionalCategory())
+                            teacher.getCategory(executionSemester.getAcademicInterval())
+                                    .map(TeacherCategory_Base::getProfessionalCategory)
                                     .orElse(null);
                     PersonContractSituation situation = null;
                     ProfessionalRegime regime = null;
@@ -210,23 +208,18 @@ public class TeacherCreditsReportFile extends TeacherCreditsReportFile_Base {
     }
 
     private String getOthersDesciption(TeacherService teacherService) {
-        List<String> others = new ArrayList<String>();
-        for (OtherService otherService : teacherService.getOtherServices()) {
-            others.add(otherService.getReason().replace("\r", "").replace("\n", "") + " (" + otherService.getCredits()
-                    + " créditos)");
-        }
-        return others.stream().collect(Collectors.joining(", "));
+        return teacherService.getOtherServices()
+                .stream()
+                .map(otherService -> String.format("%s (%s créditos)",
+                        otherService.getReason().replace("\r", "").replace("\n", ""),
+                                otherService.getCredits()))
+                .collect(Collectors.joining(", "));
     }
 
     public String getServiceExemptionDescription(ExecutionSemester executionSemester, Teacher teacher) {
-        Set<PersonContractSituation> personProfessionalExemptions =
-                PersonContractSituation.getValidTeacherServiceExemptions(teacher, executionSemester);
-        List<String> serviceExemption = new ArrayList<String>();
-
-        for (PersonContractSituation personContractSituation : personProfessionalExemptions) {
-            serviceExemption.add(personContractSituation.getContractSituation().getName().getContent());
-        }
-
-        return serviceExemption.stream().collect(Collectors.joining(", "));
+        return PersonContractSituation.getValidTeacherServiceExemptions(teacher, executionSemester)
+                .stream()
+                .map(personContractSituation -> personContractSituation.getContractSituation().getName().getContent())
+                .collect(Collectors.joining(", "));
     }
 }

@@ -19,6 +19,7 @@
 package pt.ist.fenixedu.teacher.evaluation.domain.reports;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,7 +73,7 @@ public class EffectiveTeachingLoadReportFile extends EffectiveTeachingLoadReport
     }
 
     protected Map<Teacher, Map<ExecutionCourse, BigDecimal>> getLoad(ExecutionYear executionYear) {
-        Map<Teacher, Map<ExecutionCourse, BigDecimal>> teachingLoad = new HashMap<Teacher, Map<ExecutionCourse, BigDecimal>>();
+        Map<Teacher, Map<ExecutionCourse, BigDecimal>> teachingLoad = new HashMap<>();
         for (ExecutionSemester executionSemester : executionYear.getExecutionPeriodsSet()) {
             for (TeacherService teacherService : executionSemester.getTeacherServicesSet()) {
                 for (DegreeTeachingService degreeTeachingService : teacherService.getDegreeTeachingServices()) {
@@ -82,13 +83,13 @@ public class EffectiveTeachingLoadReportFile extends EffectiveTeachingLoadReport
                         Map<ExecutionCourse, BigDecimal> executionCourseLoad =
                                 teachingLoad.get(degreeTeachingService.getTeacherService().getTeacher());
                         if (executionCourseLoad == null) {
-                            executionCourseLoad = new HashMap<ExecutionCourse, BigDecimal>();
+                            executionCourseLoad = new HashMap<>();
                         }
                         BigDecimal load = executionCourseLoad.get(degreeTeachingService.getProfessorship().getExecutionCourse());
                         if (load == null) {
                             load = BigDecimal.ZERO;
                         }
-                        load = load.add(new BigDecimal(efectiveLoad).setScale(2, BigDecimal.ROUND_HALF_UP));
+                        load = load.add(new BigDecimal(efectiveLoad).setScale(2, RoundingMode.HALF_UP));
                         executionCourseLoad.put(degreeTeachingService.getProfessorship().getExecutionCourse(), load);
                         teachingLoad.put(degreeTeachingService.getTeacherService().getTeacher(), executionCourseLoad);
                     }
@@ -101,7 +102,7 @@ public class EffectiveTeachingLoadReportFile extends EffectiveTeachingLoadReport
                             Map<ExecutionCourse, BigDecimal> executionCourseLoad =
                                     teachingLoad.get(degreeTeachingServiceCorrection.getTeacherService().getTeacher());
                             if (executionCourseLoad == null) {
-                                executionCourseLoad = new HashMap<ExecutionCourse, BigDecimal>();
+                                executionCourseLoad = new HashMap<>();
                             }
                             BigDecimal load =
                                     executionCourseLoad.get(degreeTeachingServiceCorrection.getProfessorship()

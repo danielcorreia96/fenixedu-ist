@@ -19,11 +19,11 @@
 package pt.ist.fenixedu.parking.domain.reports;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.fenixedu.academic.domain.Person;
 import org.fenixedu.academic.domain.QueueJobResult;
@@ -122,7 +122,7 @@ public class ParkingDataReportFile extends ParkingDataReportFile_Base {
         newRow[1] = parkingParty.getCardNumber().toString();
         newRow[2] = _3;
         newRow[3] = Boolean.TRUE;
-        newRow[4] = parkingGroupCodes.get(parkingParty.getParkingGroup().getGroupName()).intValue();
+        newRow[4] = parkingGroupCodes.get(parkingParty.getParkingGroup().getGroupName());
         newRow[5] = _1;
         newRow[6] = _0;
         newRow[7] = DATE;
@@ -187,25 +187,17 @@ public class ParkingDataReportFile extends ParkingDataReportFile_Base {
     }
 
     private List<ParkingParty> getValidParkingParties() {
-        List<ParkingParty> parkingParties = new ArrayList<ParkingParty>();
-        for (ParkingParty parkingParty : ParkingParty.getAll()) {
-            if (parkingParty.getParkingGroup() != null && parkingParty.getCardNumber() != null
-                    && parkingParty.getCardNumber() != 0) {
-                parkingParties.add(parkingParty);
-            }
-        }
-        return parkingParties;
+        return ParkingParty.getAll().stream()
+                .filter(parkingParty -> parkingParty.getParkingGroup() != null)
+                .filter(parkingParty -> parkingParty.getCardNumber() != null && parkingParty.getCardNumber() != 0)
+                .collect(Collectors.toList());
     }
 
     private String getString(String string, int maxSize) {
         if (string == null) {
             return "";
         }
-        if (string.length() > maxSize) {
-            return string.substring(0, maxSize - 1);
-        } else {
-            return string;
-        }
+        return string.length() > maxSize ? string.substring(0, maxSize - 1) : string;
     }
 
     @Override

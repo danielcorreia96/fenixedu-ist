@@ -51,8 +51,8 @@ public class WorkloadSummaryBoardReportFile extends WorkloadSummaryBoardReportFi
 
         for (StudentInquiryRegistry inquiryRegistry : Bennu.getInstance().getStudentsInquiryRegistriesSet()) {
             StudentInquiryExecutionPeriod inquiryExecutionPeriod = inquiryRegistry.getStudentInquiryExecutionPeriod();
-            if ((inquiryExecutionPeriod != null && inquiryExecutionPeriod.getExecutionPeriod().getExecutionYear() == getExecutionYear())
-                    || inquiryExecutionPeriod == null) {
+            if (inquiryExecutionPeriod == null
+                    || inquiryExecutionPeriod.getExecutionPeriod().getExecutionYear() == getExecutionYear()) {
                 Row row = spreadsheet.addRow();
                 row.setCell(GepReportFile.getExecutionSemesterCode(inquiryRegistry.getExecutionCourse().getExecutionPeriod()));
                 row.setCell(inquiryRegistry.getStudent().getPerson().getUsername());

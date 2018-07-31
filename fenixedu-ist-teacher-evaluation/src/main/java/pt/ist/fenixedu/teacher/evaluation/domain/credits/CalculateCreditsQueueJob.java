@@ -26,6 +26,7 @@ import org.fenixedu.academic.domain.ExecutionSemester;
 import org.fenixedu.academic.domain.ExecutionYear;
 import org.fenixedu.academic.domain.QueueJobResult;
 import org.fenixedu.academic.domain.Teacher;
+import org.fenixedu.academic.domain.TeacherAuthorization;
 
 public class CalculateCreditsQueueJob extends CalculateCreditsQueueJob_Base {
 
@@ -59,9 +60,9 @@ public class CalculateCreditsQueueJob extends CalculateCreditsQueueJob_Base {
     }
 
     private Set<Teacher> getThisYearTeachers(ExecutionYear executionYear) {
-        Set<Teacher> teachers = new HashSet<Teacher>();
+        Set<Teacher> teachers = new HashSet<>();
         for (ExecutionSemester executionSemester : getExecutionYear().getExecutionPeriodsSet()) {
-            teachers.addAll(executionSemester.getTeacherAuthorizationStream().map(a -> a.getTeacher())
+            teachers.addAll(executionSemester.getTeacherAuthorizationStream().map(TeacherAuthorization::getTeacher)
                     .collect(Collectors.toSet()));
         }
         return teachers;

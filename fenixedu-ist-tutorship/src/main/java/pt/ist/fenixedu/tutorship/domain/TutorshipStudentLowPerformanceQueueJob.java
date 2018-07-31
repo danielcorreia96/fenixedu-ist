@@ -25,12 +25,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.fenixedu.academic.domain.ExecutionYear;
 import org.fenixedu.academic.domain.QueueJobResult;
 import org.fenixedu.academic.domain.student.Registration;
 import org.fenixedu.academic.domain.student.Student;
-import org.fenixedu.academic.domain.student.registrationStates.RegistrationState;
 import org.fenixedu.academic.domain.student.registrationStates.RegistrationStateType;
 import org.fenixedu.commons.spreadsheet.Spreadsheet;
 import org.fenixedu.commons.spreadsheet.Spreadsheet.Row;
@@ -77,7 +77,7 @@ public class TutorshipStudentLowPerformanceQueueJob extends TutorshipStudentLowP
     }
 
     private List<StudentLowPerformanceBean> calcstudentsLowPerformanceBean(List<AbstractPrescriptionRule> prescriptionRules) {
-        LinkedList<StudentLowPerformanceBean> studentLowPerformanceBeans = new LinkedList<StudentLowPerformanceBean>();
+        LinkedList<StudentLowPerformanceBean> studentLowPerformanceBeans = new LinkedList<>();
 
         final List<AbstractPrescriptionRule> abstractPrescriptionRules =
                 AbstractPrescriptionRule.readPrescriptionRules(getPrescriptionEnum());
@@ -116,14 +116,12 @@ public class TutorshipStudentLowPerformanceQueueJob extends TutorshipStudentLowP
     private StudentLowPerformanceBean calcStudentCycleLowPerformanceBean(Registration registration,
             List<AbstractPrescriptionRule> prescriptionRules) {
 
-        int numberOfEntriesStudentInSecretary = 0;
+        int numberOfEntriesStudentInSecretary;
 
         List<Registration> fullRegistrationPath = getFullRegistrationPath(registration);
 
         // Historic Student
-        for (Registration reg : fullRegistrationPath) {
-            numberOfEntriesStudentInSecretary += getNumberOfEntriesStudentInSecretary(reg);
-        }
+        numberOfEntriesStudentInSecretary = fullRegistrationPath.stream().mapToInt(this::getNumberOfEntriesStudentInSecretary).sum();
 
         BigDecimal sumEcts = registration.getCurriculum().getSumEctsCredits();
 
@@ -140,42 +138,32 @@ public class TutorshipStudentLowPerformanceQueueJob extends TutorshipStudentLowP
     }
 
     private int getNumberOfEntriesStudentInSecretary(Registration registration) {
-        int numberOfEntriesStudentInSecretary = 0;
-        for (ExecutionYear execYear : ExecutionYear.readExecutionYears(registration.getStartExecutionYear(), getExecutionYear())) {
-            RegistrationState registrationState = registration.getLastRegistrationState(execYear);
-            if (registrationState != null && registrationState.isActive()) {
-                numberOfEntriesStudentInSecretary += 1;
-            }
-        }
-        return numberOfEntriesStudentInSecretary;
-
+        return (int) ExecutionYear.readExecutionYears(registration.getStartExecutionYear(), getExecutionYear())
+                .stream()
+                .map(registration::getLastRegistrationState)
+                .filter(registrationState -> registrationState != null && registrationState.isActive())
+                .count();
     }
 
     private boolean isLowPerformanceStudent(Registration registration, BigDecimal ects, int numberOfEntriesStudentInSecretary,
             List<AbstractPrescriptionRule> prescriptionRules) {
-        for (AbstractPrescriptionRule prescriptionRule : prescriptionRules) {
-            if ((prescriptionRule.isPrescript(registration, ects, numberOfEntriesStudentInSecretary, getExecutionYear()))) {
-                return true;
-            }
-        }
-        return false;
+        return prescriptionRules.stream().anyMatch(prescriptionRule -> (prescriptionRule
+                .isPrescript(registration, ects, numberOfEntriesStudentInSecretary, getExecutionYear())));
     }
 
     private String workingStudent(Student student) {
-        return student.isWorkingStudent() ? "Trabalhor Estudante" + ";" : "";
+        return student.isWorkingStudent() ? "Trabalhor Estudante;" : "";
     }
 
     private String parcialStudent(Registration registration) {
-        return (registration.isPartialRegime(getExecutionYear()) ? "Estudante Parcial" + ";" : "");
+        return (registration.isPartialRegime(getExecutionYear()) ? "Estudante Parcial;" : "");
     }
 
     private String flunkedStudent(List<Registration> registrations) {
-        for (Registration registration : registrations) {
-            for (RegistrationState registrationState : registration.getRegistrationStatesSet()) {
-                if (registrationState.getStateType() == RegistrationStateType.FLUNKED) {
-                    return "Prescrito" + ";";
-                }
-            }
+        if (registrations.stream()
+                .flatMap(registration -> registration.getRegistrationStatesSet().stream())
+                .anyMatch(registrationState -> registrationState.getStateType() == RegistrationStateType.FLUNKED)) {
+            return "Prescrito;";
         }
         return "";
     }
@@ -225,7 +213,7 @@ public class TutorshipStudentLowPerformanceQueueJob extends TutorshipStudentLowP
     // Historic Student
     protected static List<Registration> getFullRegistrationPath(final Registration current) {
         if (current.getDegreeType().isBolonhaDegree() || current.getDegreeType().isIntegratedMasterDegree()) {
-            List<Registration> path = new ArrayList<Registration>();
+            List<Registration> path = new ArrayList<>();
             path.add(current);
             Registration source;
             if (current.getSourceRegistration() != null
@@ -233,7 +221,7 @@ public class TutorshipStudentLowPerformanceQueueJob extends TutorshipStudentLowP
                 path.addAll(getFullRegistrationPath(source));
             }
 
-            Collections.sort(path, Registration.COMPARATOR_BY_START_DATE);
+            path.sort(Registration.COMPARATOR_BY_START_DATE);
             return path;
         } else {
             return Collections.singletonList(current);
@@ -241,11 +229,9 @@ public class TutorshipStudentLowPerformanceQueueJob extends TutorshipStudentLowP
     }
 
     protected static boolean isValidSourceLink(Registration source) {
-        return source.getActiveStateType().equals(RegistrationStateType.TRANSITED)
-                || source.getActiveStateType().equals(RegistrationStateType.FLUNKED)
-                || source.getActiveStateType().equals(RegistrationStateType.INTERNAL_ABANDON)
-                || source.getActiveStateType().equals(RegistrationStateType.EXTERNAL_ABANDON)
-                || source.getActiveStateType().equals(RegistrationStateType.INTERRUPTED);
+        return Stream.of(RegistrationStateType.TRANSITED, RegistrationStateType.FLUNKED, RegistrationStateType.INTERNAL_ABANDON,
+                RegistrationStateType.EXTERNAL_ABANDON, RegistrationStateType.INTERRUPTED)
+                .anyMatch(registrationStateType -> source.getActiveStateType() == registrationStateType);
     }
 
     private boolean isValidRegistration(Registration registration) {
@@ -257,9 +243,7 @@ public class TutorshipStudentLowPerformanceQueueJob extends TutorshipStudentLowP
     @Atomic
     public static TutorshipStudentLowPerformanceQueueJob createTutorshipStudentLowPerformanceQueueJob(
             PrescriptionEnum prescriptionEnum, ExecutionYear executionYear) {
-        final TutorshipStudentLowPerformanceQueueJob tutorshipStudentLowPerformanceQueueJob =
-                new TutorshipStudentLowPerformanceQueueJob(prescriptionEnum, executionYear);
-        return tutorshipStudentLowPerformanceQueueJob;
+        return new TutorshipStudentLowPerformanceQueueJob(prescriptionEnum, executionYear);
     }
 
 }
