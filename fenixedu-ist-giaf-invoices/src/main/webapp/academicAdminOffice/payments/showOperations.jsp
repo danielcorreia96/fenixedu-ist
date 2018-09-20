@@ -34,6 +34,8 @@
 </html:messages>
 
 <bean:define id="personId" name="person" property="externalId" />
+<bean:define id="username" name="person" property="username"/>
+
 <fr:form action='<%= "/payments.do?personId=" + personId %>'>
 
 	<input type="hidden" name="method" value=""/>
@@ -61,6 +63,13 @@
 		<li><html:link action="<%="/payments.do?method=showEvents&amp;personId=" + personId %>">
 			<bean:message bundle="ACADEMIC_OFFICE_RESOURCES" key="label.payments.currentEvents" />
 		</html:link></li>
+	</ul>
+	<ul>
+		<li>
+			<html:link href="<%= request.getContextPath() + "/accounting-management/" + username %>">
+				<bean:message bundle="ACADEMIC_OFFICE_RESOURCES" key="label.payments.show.events"/>
+			</html:link>
+		</li>
 	</ul>
 	<%--<ul>--%>
 		<%--<li><html:link--%>
